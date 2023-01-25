@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.micode.ImplHolder.model.ImplType;
-import ru.micode.ImplHolder.model.ResultProcess;
 import ru.micode.ImplHolder.service.ConsumerHolderFirstService;
 import ru.micode.ImplHolder.service.ConsumerHolderSecondService;
 

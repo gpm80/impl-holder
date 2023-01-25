@@ -1,5 +1,6 @@
 package ru.micode.ImplHolder.lib;
 
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -31,7 +32,9 @@ public class ImplHolder<K, T extends ImplHolder.Key<K>> {
      * @param services список реализаций интерфейса.
      */
     public ImplHolder(List<T> services) {
-        implMap = services.stream().collect(Collectors.toMap(Key::getKey, Function.identity()));
+        implMap = services.stream().collect(Collectors.toMap(Key::getKey, Function.identity(), (impl, implDup) -> {
+            throw new NoUniqueBeanDefinitionException(implDup.getClass(), 2, "duplicate bean implementation");
+        }));
     }
 
     /**
