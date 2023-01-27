@@ -1,7 +1,7 @@
 package ru.micode.ImplHolder.lib;
 
 /**
- * Created by Petr Gusarov
+ * Исключение отсутствия реализации.
  */
 public class UnsupportedImplException extends RuntimeException {
 

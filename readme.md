@@ -1,55 +1,67 @@
-# Держатель множественных реализаций интерфейса сервиса Spring
+# Обертка реализаций интерфейса сервиса
 
 ## Проблема
 
 У вас в проекте есть интерфейс сервиса, который реализуется более чем одной реализацией, то варианты DI определенной
 реализации сводится к одному из следующих вариантов:
+
 - `@Autowired List<Object>` c ручным выбором реализации из списка;
-- `@Autowired Map<String, Object> map`, где ключ это id реализации сервиса (выданный Spring или установленный в ручную через `@Spring("value")`);
+- `@Autowired Map<String, Object> map`, где ключ это id реализации сервиса (выданный Spring или установленный в ручную
+  через `@Spring("value")`);
 - DI через `@Qualifier` тех реализаций, которые вам необходимы.
-- `@Primary`, но в данном случае выбор отличной от дефолтной реализации сводится к применению одного из выше перечисленных методов.
+- `@Primary`, но в данном случае выбор отличной от дефолтной реализации сводится к применению одного из выше
+  перечисленных методов.
 
 ## Решение
 
-Компонент `ImplHolder<K, T extends ImplHolder.Key<K>>`, который хранит в себе карту сервисов с любой реализацией ключа
-выбора.
+Абстрактный класс обертка `public abstract class ImplWrapper<K, T extends ImplKey<K>>`, который хранит в себе карту
+сервисов с любой реализацией ключа реализации.
 
 ### Ограничения
 
-Интерфейс сервиса, который планируется использовать через ImplHolder должен наследовать ImplHolder.Key<K>, а все реализации
-возвращать ключ своей реализации типа <K>
+Интерфейс сервиса, который планируется использовать через `ImplWrapper` должен наследовать `ImplKey<K>`, а все
+реализации возвращать ключ своей реализации типа `<K>`
 
 ```java
 /**
  * Ключ реализации.
  */
 public enum ImplType {
-  ONE, TWO
+    ONE, TWO
 }
 
 /**
- * Интерфейс сервиса.
+ * Интерфейс сервиса имени.
  */
-public interface ProcessService extends ImplHolder.Key<ImplType> {
-    String process();
+public interface PrintNameService extends ImplKey<ImplType> {
+    String name();
 }
 
+/**
+ * Реализация сервиса имени.
+ */
 @Service
-public class OneProcessServiceImpl implements ProcessService {
+public class OnePrintNameService implements PrintNameService {
 
-  /**
-   * Уникальный ключ реализации.
-   * @return {@link ImplType} 
-   */
   @Override
   public ImplType getKey() {
     return ImplType.ONE;
   }
 
   @Override
-  public String process() {
-    return "Impl service for " + getKey();
+  public String name() {
+    return getKey().name();
   }
+}
+
+/**
+ * Обертка реализаций.
+ */
+@Component
+public class PrintNameServiceWrapper extends ImplWrapper<ImplType, PrintNameService> {
+    protected PrintNameServiceWrapper(List<PrintNameService> services) {
+        super(services);
+    }
 }
 ```
 
@@ -57,27 +69,21 @@ public class OneProcessServiceImpl implements ProcessService {
 
 ```java
 @Service
-public class ConsumerService {
+public class OtherService {
 
-  /**
-   * Holder реализаций сервиса ProcessService.
-   */
-  private final ImplHolder<ImplType, ProcessService> processServiceImplHolder;
+  private final PrintNameServiceWrapper printNameServiceWrapper;
 
-  public ConsumerService(ImplHolder<ImplType, ProcessService> processServiceImplHolder) {
-    this.processServiceImplHolder = processServiceImplHolder;
+  public OtherService(PrintNameServiceWrapper printNameServiceWrapper) {
+    this.printNameServiceWrapper = printNameServiceWrapper;
   }
 
   /**
-   * Пример вызова реализации по enum ImplType.
+   * Вызов реализации по ключу.
    *
-   * @param implType ключ реализации сервиса
-   * @return
+   * @param implType ключ реализации.
    */
-  public ResultProcess call(ImplType implType) {
-    return processServiceImplHolder.get(implType)
-            .orElseThrow(UnsupportedImplException::new)
-            .process();
+  public String name(ImplType implType) {
+    return printNameServiceWrapper.get(implType).orElseThrow(UnsupportedImplException::new).name();
   }
 }
 ```
