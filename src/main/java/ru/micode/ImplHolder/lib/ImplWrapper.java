@@ -35,13 +35,24 @@ public abstract class ImplWrapper<K, T extends ImplKey<K>> {
     }
 
     /**
-     * Возвращает реализацию по ключу.
+     * Поиск реализацию по ключу.
      *
      * @param key ключ реализации
      * @return реализация интерфейса.
      */
-    public Optional<T> get(K key) {
+    public Optional<T> find(K key) {
         return Optional.ofNullable(implMap.get(key));
+    }
+
+    /**
+     * Возвращает реализацию по ключу.
+     *
+     * @param key ключ реализации
+     * @return реализация интерфейса.
+     * @throws UnsupportedImplException выбрасывается если реализации не существует.
+     */
+    public T get(K key) throws UnsupportedImplException {
+        return find(key).orElseThrow(UnsupportedImplException::new);
     }
 
     /**

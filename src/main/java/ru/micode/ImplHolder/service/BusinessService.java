@@ -22,7 +22,7 @@ public class BusinessService {
     }
 
     public PrintNameService getPrintService(ImplType implType){
-        return printNameServiceWrapper.get(implType).orElseThrow(UnsupportedImplException::new);
+        return printNameServiceWrapper.find(implType).orElseThrow(UnsupportedImplException::new);
     }
 
     public String name(ImplType implType) {
@@ -30,7 +30,7 @@ public class BusinessService {
     }
 
     public int ordinal(ImplType implType) {
-        return printOrdinalServiceWrapper.get(implType).orElseThrow(UnsupportedImplException::new).ordinal();
+        return printOrdinalServiceWrapper.get(implType).ordinal();
     }
 
     public String getIdNameService() {

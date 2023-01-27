@@ -18,7 +18,7 @@ public class OtherService {
     }
 
     public PrintNameService getPrintService(ImplType implType) {
-        return printNameServiceWrapper.get(implType).orElseThrow(UnsupportedImplException::new);
+        return printNameServiceWrapper.find(implType).orElseThrow(UnsupportedImplException::new);
     }
 
     /**
